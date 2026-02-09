@@ -1,0 +1,60 @@
+CLASS zcl_7587_fallout DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC.
+
+  PUBLIC SECTION.
+S
+    TYPES: BEGIN OF ty_dweller,
+             name        TYPE string,
+             strength    TYPE i,
+             perception  TYPE i,
+             endurance   TYPE i,
+           END OF ty_dweller.
+
+    TYPES ty_dweller_tab TYPE STANDARD TABLE OF ty_dweller WITH EMPTY KEY.
+    TYPES ty_result_tab  TYPE STANDARD TABLE OF string WITH EMPTY KEY.
+
+    DATA gt_dwellers TYPE ty_dweller_tab.
+
+    METHODS add_dweller.
+
+    METHODS evaluate_dwellers
+      RETURNING VALUE(rt_results) TYPE ty_result_tab.
+
+ENDCLASS.
+
+
+
+CLASS zcl_7587_fallout IMPLEMENTATION.
+
+  METHOD add_dweller.
+    APPEND VALUE ty_dweller(
+      name       = 'Lucy'
+      strength   = 5
+      perception = 7
+      endurance  = 6
+    ) TO gt_dwellers.
+  ENDMETHOD.
+
+
+  METHOD evaluate_dwellers.
+    DATA lv_total TYPE i.
+    DATA lv_text  TYPE string.
+
+    LOOP AT gt_dwellers INTO DATA(ls_dweller).
+      lv_total = ls_dweller-strength
+               + ls_dweller-perception
+               + ls_dweller-endurance.
+
+      IF lv_total >= 18.
+        lv_text = |{ ls_dweller-name } is ready for the wasteland (SPECIAL { lv_total })|.
+      ELSE.
+        lv_text = |{ ls_dweller-name } should stay in the vault (SPECIAL { lv_total })|.
+      ENDIF.
+
+      APPEND lv_text TO rt_results.
+    ENDLOOP.
+  ENDMETHOD.
+
+ENDCLASS.
