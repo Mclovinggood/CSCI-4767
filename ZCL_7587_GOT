@@ -1,0 +1,112 @@
+CLASS zcl_7587_got DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+    INTERFACES if_oo_adt_classrun.
+
+  PRIVATE SECTION.
+    TYPES: BEGIN OF ty_adventurer,
+             id          TYPE i,
+             name        TYPE char20,
+             title       TYPE char30,       
+             honor       TYPE i,           
+             dragons     TYPE p DECIMALS 0,
+             is_noble    TYPE abap_bool,
+           END OF ty_adventurer.
+
+    DATA mt_adventurers TYPE TABLE OF ty_adventurer.
+
+    METHODS fill_adventurers.
+
+    METHODS process_adventurer
+      IMPORTING
+        is_adv   TYPE ty_adventurer
+        io_out   TYPE REF TO if_oo_adt_classrun_out.
+
+    METHODS calculate_tourney_reward
+      IMPORTING
+        iv_honor         TYPE i
+        iv_is_noble      TYPE abap_bool
+      RETURNING
+        VALUE(rv_dragons) TYPE p DECIMALS 0.
+
+ENDCLASS.
+
+
+CLASS zcl_7587_got IMPLEMENTATION.
+
+  METHOD if_oo_adt_classrun~main.
+    fill_adventurers( ).
+
+    io_out->write( '=== A Knight of the Seven Kingdoms - Wanderers Report ===' ).
+    io_out->write( 'Roads of Westeros - Honor and Dragons tallied' ).
+    io_out->write( '' ).
+
+    LOOP AT mt_adventurers INTO DATA(ls_adv).
+      process_adventurer( is_adv = ls_adv
+                          io_out = out ).
+    ENDLOOP.
+
+    DATA lv_days TYPE i VALUE 0.
+    io_out->write( 'Days wandering the hedge:' ).
+    DO 5 TIMES.
+      lv_days = lv_days + 1.
+      io_out->write( |Day { lv_days }: Still seeking true knighthood...| ).
+    ENDDO.
+
+    io_out->write( '' ).
+    io_out->write( '=== May the Warrior guide your path ===' ).
+  ENDMETHOD.
+
+
+  METHOD fill_adventurers.
+    mt_adventurers = VALUE #(
+      ( id = 1  name = 'Dunk'         title = 'Hedge Knight'       honor = 75   dragons =  8   is_noble = abap_false )
+      ( id = 2  name = 'Egg'          title = 'Squire (hidden)'    honor = 40   dragons =  0   is_noble = abap_true  )
+      ( id = 3  name = 'Aerion'       title = 'Brightflame Prince' honor = 30   dragons = 200  is_noble = abap_true  )
+      ( id = 4  name = 'Maekar'       title = 'Prince of Summerhall'honor = 90  dragons = 500  is_noble = abap_true  )
+    ).
+  ENDMETHOD.
+
+
+  METHOD process_adventurer.
+    io_out->write( |Adventurer: { is_adv-name } - { is_adv-title }| ).
+
+    DATA(lv_dragons) = is_adv-dragons.
+
+    IF is_adv-honor >= 80.
+      io_out->write( ' → True knightly honor! The smallfolk sing songs.' ).
+      lv_dragons = lv_dragons + 30.   " reward from grateful villagers
+    ELSEIF is_adv-honor >= 50.
+      io_out->write( ' → Honest hedge work - steady but unglamorous.' ).
+      lv_dragons = lv_dragons + 15.
+    ELSE.
+      io_out->write( ' → Honor low... watch for hedge justice.' ).
+      lv_dragons = lv_dragons - 10.  
+    ENDIF.
+
+    DATA(lv_bonus) = calculate_tourney_reward(iv_honor    = is_adv-honor
+                                               iv_is_noble = is_adv-is_noble ).
+
+    lv_dragons = lv_dragons + lv_bonus.
+
+    io_out->write( | → Dragons after road events: { lv_dragons }| ).
+    io_out->write( |Honor level: { is_adv-honor }| ).
+    io_out->write( '--------------------------------' ).
+  ENDMETHOD.
+
+
+  METHOD calculate_tourney_reward.
+    CASE iv_is_noble.
+      WHEN abap_true.
+        rv_dragons = 50 + ( iv_honor DIV 10 ).
+        io_out->write( ' → Targaryen blood draws tourney purses + extra' ).
+      WHEN OTHERS.
+        rv_dragons = iv_honor DIV 5.S
+        io_out->write( ' → Hard-won hedge knight purse' ).
+    ENDCASE.
+  ENDMETHOD.
+
+ENDCLASS.
