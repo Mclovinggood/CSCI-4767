@@ -1,0 +1,58 @@
+CLASS zcl_7587_error DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+    TYPES: BEGIN OF ty_flight_info,
+             carrier    TYPE s_carr_id,
+             connection TYPE s_conn_id,
+             seats_max  TYPE sflight-seatsmax,
+             seats_occ  TYPE sflight-seatsocc,   " ← will be flagged as unused if not read
+             currency   TYPE sflight-currency,   " ← typical unused field → suppress with ##NEEDED
+           END OF ty_flight_info.
+
+    DATA: flight TYPE ty_flight_info,
+          log    TYPE TABLE OF string.   " just for demo output
+
+    METHODS constructor
+      IMPORTING
+        iv_carrier    TYPE s_carr_id
+        iv_connection TYPE s_conn_id
+        iv_seats_max  TYPE s_seatsocc
+        iv_seats_occ  TYPE s_seatsocc
+        iv_currency   TYPE s_currcode ##NEEDED.   " pragma suppresses "no read access" warning
+
+    METHODS get_occupancy_text
+      RETURNING
+        VALUE(rv_text) TYPE string.
+
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS zcl_7587_error IMPLEMENTATION.
+
+  METHOD constructor.
+    flight-carrier    = iv_carrier.
+    flight-connection = iv_connection.
+    flight-seats_max  = iv_seats_max.
+    flight-seats_occ  = iv_seats_occ.
+    flight-currency   = iv_currency.   " assigned but never read → suppressed above
+  ENDMETHOD.
+
+
+  METHOD get_occupancy_text.
+    " Intentional bug: using max instead of occupied → ATC won't catch logic bugs,
+    " but human review + testing would; here we simulate a typical copy-paste mistake
+    rv_text = |Flight { flight-carrier }{ flight-connection }: |
+           && |Occupied seats: { flight-seats_max }|.   " ← BUG: should be seats_occ
+
+    " Example: build a log (not really used, but shows more code)
+    APPEND |Max capacity was { flight-seats_max }| TO log.
+    " seats_occ never read → warning from ATC/SLIN
+  ENDMETHOD.
+
+ENDCLASS.
