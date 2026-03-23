@@ -1,0 +1,86 @@
+REPORT z_string_functions_regex_demo.
+
+CLASS ZCL_7587_DEMO DEFINITION.
+  PUBLIC SECTION.
+    CLASS-METHODS main.
+ENDCLASS.
+
+CLASS ZCL_7587_DEMO IMPLEMENTATION.
+  METHOD main.
+    DATA: lv_text     TYPE string VALUE `  Let's talk about ABAP and regex in SAP BTP ABAP Environment!  `,
+          lv_email    TYPE string VALUE `john.doe123@example.com`,
+          lv_result   TYPE string,
+          lv_offset   TYPE i,
+          lv_count    TYPE i,
+          lv_found    TYPE abap_bool.
+
+    cl_demo_output=>write( |Original text: "{ lv_text }"| ).
+
+    " 1. Description functions
+    cl_demo_output=>write( |Length (STRLEN incl. blanks): { strlen( lv_text ) }| ).
+    cl_demo_output=>write( |Length (NUMOFCHAR excl. trailing blanks): { numofchar( lv_text ) }| ).
+
+    " 2. Search functions - case-sensitive vs insensitive
+    lv_offset = find( val = lv_text sub = 'ABAP' case = abap_true ).
+    cl_demo_output=>write( |FIND 'ABAP' (case-sensitive): offset = { lv_offset }| ).
+
+    lv_offset = find( val = lv_text sub = 'abap' case = abap_false occ = -1 ).  " last occurrence, case-insensitive
+    cl_demo_output=>write( |FIND 'abap' (case-insensitive, last): offset = { lv_offset }| ).
+
+    lv_count = count( val = lv_text sub = ' ' ).
+    cl_demo_output=>write( |COUNT spaces: { lv_count }| ).
+
+    " 3. Processing functions
+    lv_result = to_upper( lv_text ).
+    cl_demo_output=>write( |TO_UPPER: { lv_result }| ).
+
+    lv_result = substring( val = lv_text off = 10 len = 15 ).
+    cl_demo_output=>write( |SUBSTRING (off 10, len 15): "{ lv_result }"| ).
+
+    lv_result = substring_from( val = lv_text sub = 'ABAP' ).
+    cl_demo_output=>write( |SUBSTRING_FROM 'ABAP': "{ lv_result }"| ).
+
+    lv_result = segment( val = lv_text sep = ' ' index = 4 ).
+    cl_demo_output=>write( |SEGMENT 4 (sep space): "{ lv_result }"| ).
+
+    lv_result = condense( val = lv_text ).
+    cl_demo_output=>write( |CONDENSE (remove internal spaces): "{ lv_result }"| ).
+
+    " 4. Predicate functions
+    lv_found = contains( val = lv_text sub = 'regex' case = abap_false ).
+    cl_demo_output=>write( |CONTAINS 'regex' (case-insens): { lv_found }| ).
+
+    " 5. Regular Expressions (PCRE)
+    " Simple email validation
+    IF matches( val = lv_email pcre = '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$' ).
+      cl_demo_output=>write( |Email "{ lv_email }" is VALID (matches PCRE).| ).
+    ELSE.
+      cl_demo_output=>write( |Email "{ lv_email }" is INVALID.| ).
+    ENDIF.
+
+    " Replace all non-alphanumeric chars (except @ . - _) with underscore
+    lv_result = lv_email.
+    REPLACE ALL OCCURRENCES OF PCRE '[^A-Za-z0-9@._-]' IN lv_result WITH '_'.
+    cl_demo_output=>write( |REPLACE non-alphanum (PCRE): "{ lv_result }"| ).
+
+    " Find all occurrences of word characters starting with 'a' or 'r'
+    DATA lt_matches TYPE match_result_tab.
+    FIND ALL OCCURRENCES OF PCRE '\b[aArR]\w*' IN lv_text
+         RESULTS lt_matches
+         IGNORING CASE.
+
+    cl_demo_output=>write( |Found { lines( lt_matches ) } words starting with A/a/R/r (case-insensitive):| ).
+    LOOP AT lt_matches INTO DATA(ls_match).
+      cl_demo_output=>write( |  - Match: "{ substring( val = lv_text off = ls_match-offset len = ls_match-length ) }"| ).
+    ENDLOOP.
+
+    " Count digits in text
+    lv_count = count( val = lv_text pcre = '\d+' ).
+    cl_demo_output=>write( |Number of digit sequences (PCRE): { lv_count }| ).
+
+    cl_demo_output=>display( ).
+  ENDMETHOD.
+ENDCLASS.
+
+START-OF-SELECTION.
+  demo=>main( ).
