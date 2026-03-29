@@ -1,0 +1,47 @@
+@EndUserText.label: 'Employee Master Data'
+@AbapCatalog.deliveryClass: #A          " Application table (most common)
+@AbapCatalog.tableCategory: #TRANSPARENT
+define table z_employee {
+  key client       : abap.clnt not null;
+  key employee_id  : z_employee_id;          " Custom data element (you'll create this)
+
+      first_name   : /dmo/first_name;
+      last_name    : /dmo/last_name;
+      birth_date   : /dmo/birth_date;
+      department   : /dmo/department;
+}
+
+@EndUserText.label: 'Employee with Admin Fields'
+@AbapCatalog.deliveryClass: #A
+@AbapCatalog.tableCategory: #TRANSPARENT
+define table z_employee_admin {
+  key client       : abap.clnt not null;
+  key employee_id  : z_employee_id;
+
+      first_name   : /dmo/first_name;
+      last_name    : /dmo/last_name;
+
+  include /lrn/s_admin;     " Reuses created_by, created_at, last_changed_by, last_changed_at, etc.
+}
+
+@EndUserText.label: 'Z## Employee Table - Master Data'
+@AbapCatalog.deliveryClass: #A
+@AbapCatalog.tableCategory: #TRANSPARENT
+define table z_employee {
+  key client         : abap.clnt not null;
+  key employee_id    : z_employee_id;          " Create this data element
+
+      first_name     : /dmo/first_name;
+      last_name      : /dmo/last_name;
+      birth_date     : /dmo/birth_date;
+      email          : /dmo/email_address;
+
+      @Semantics.amount.currencyCode: 'currency_code'
+      monthly_salary : z_monthly_salary;
+
+      currency_code  : /dmo/currency_code;
+
+      department     : /dmo/department;
+
+  include /lrn/s_admin;   " Administrative fields (created_by, changed_at, etc.)
+}
