@@ -1,0 +1,21 @@
+@AbapCatalog.viewEnhancementCategory: [#NONE]
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Employee (Entity)'
+@Metadata.ignorePropagatedAnnotations: true
+@ObjectModel.usageType:{
+  serviceQuality: #X,
+  sizeCategory: #S,
+  dataClass: #MIXED
+}
+define view entity Z7587_R_EMPLOYEE
+  as select from Z7587EMPLOY
+{
+  key EmployeeID,
+      FirstName,
+      LastName,
+      //AnnualSalary,
+      //CurrencyCode,
+      DepartmentID,
+      /* all other fields from the table except Client, AnnualSalary, and CurrencyCode */
+      /* The template will insert them automatically with nice mixed-case aliases */
+}
