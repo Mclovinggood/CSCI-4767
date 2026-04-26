@@ -1,0 +1,34 @@
+@EndUserText.label: 'Tier 2 API View'
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+define root view entity Z_I_TIER2_API
+  as select from sflight
+{
+  key carrid,
+  key connid,
+      fldate,
+      price,
+      currency
+}
+
+managed implementation in class ZBP_I_TIER2_API unique;
+
+define behavior for Z_I_TIER2_API
+persistent table sflight
+lock master
+authorization master ( instance )
+{
+  read;
+}
+
+CLASS zbp_i_tier2_api DEFINITION PUBLIC FINAL CREATE PUBLIC.
+  PUBLIC SECTION.
+    INTERFACES: if_abap_behavior_handler.
+ENDCLASS.
+
+CLASS zbp_i_tier2_api IMPLEMENTATION.
+ENDCLASS.
+
+@EndUserText.label: 'Tier 2 API Service'
+define service Z_UI_TIER2_API {
+  expose Z_I_TIER2_API;
+}
